@@ -1,0 +1,178 @@
+name: streamflix
+
+# ---------------------------------------------------------------------------
+# StreamFlix — Netflix-style mini streaming + recommendation backend.
+# One command: `docker compose up --build`.
+# Scale a stateless service: `docker compose up --scale video-service=3`.
+# ---------------------------------------------------------------------------
+
+x-service-env: &service-env
+  SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-streamflix}
+  SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-streamflix}
+  SPRING_DATA_REDIS_HOST: ${REDIS_HOST:-redis}
+  SPRING_DATA_REDIS_PORT: ${REDIS_PORT:-6379}
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+  JWT_SECRET: ${JWT_SECRET:-change-me-streamflix-super-secret-key-please-rotate-0123456789}
+  JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+  CACHE_ENABLED: ${CACHE_ENABLED:-true}
+
+services:
+  # ----------------------------- Infrastructure -----------------------------
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-streamflix}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-streamflix}
+      POSTGRES_DB: ${OLTP_DB:-streaming_oltp}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/db/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      # host 5433 -> container 5432 (host 5432 is often taken by a local Postgres);
+      # inter-service traffic uses the container network on 5432 regardless
+      - "5433:5432"
+    healthcheck:
+      # specify -d so libpq doesn't default the db name to the username ("streamflix"),
+      # which would log a harmless-but-noisy FATAL "database streamflix does not exist"
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-streamflix} -d ${OLTP_DB:-streaming_oltp}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  kafka:
+    image: apache/kafka:3.7.0
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+
+  # ------------------------------- Services ---------------------------------
+  user-service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        MODULE: user-service
+    environment:
+      <<: *service-env
+      DB_SCHEMA: usr
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_HOST:-postgres}:5432/${OLTP_DB:-streaming_oltp}?currentSchema=usr
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  video-service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        MODULE: video-service
+    environment:
+      <<: *service-env
+      DB_SCHEMA: video
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_HOST:-postgres}:5432/${OLTP_DB:-streaming_oltp}?currentSchema=video
+    ports:
+      - "8082:8082"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  recommendation-service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        MODULE: recommendation-service
+    environment:
+      <<: *service-env
+      DB_SCHEMA: reco
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_HOST:-postgres}:5432/${OLTP_DB:-streaming_oltp}?currentSchema=reco
+      OLAP_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_HOST:-postgres}:5432/${OLAP_DB:-streaming_olap}
+    ports:
+      - "8083:8083"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  analytics-service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        MODULE: analytics-service
+    environment:
+      <<: *service-env
+      DB_SCHEMA: analytics
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_HOST:-postgres}:5432/${OLTP_DB:-streaming_oltp}?currentSchema=analytics
+      OLAP_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_HOST:-postgres}:5432/${OLAP_DB:-streaming_olap}
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        MODULE: api-gateway
+    environment:
+      <<: *service-env
+    ports:
+      - "8080:8080"
+    depends_on:
+      - user-service
+      - video-service
+      - recommendation-service
+      - analytics-service
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api-gateway
+
+volumes:
+  pgdata:

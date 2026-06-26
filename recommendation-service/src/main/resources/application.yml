@@ -1,0 +1,52 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: recommendation-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/streaming_oltp?currentSchema=reco}
+    username: ${SPRING_DATASOURCE_USERNAME:streamflix}
+    password: ${SPRING_DATASOURCE_PASSWORD:streamflix}
+  flyway:
+    enabled: true
+    default-schema: ${DB_SCHEMA:reco}
+    schemas: ${DB_SCHEMA:reco}
+    create-schemas: true
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: reco
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.value.default.type: com.streamflix.common.event.UserBehaviorEvent
+        spring.json.trusted.packages: com.streamflix.common.event
+        spring.json.use.type.headers: false
+
+app:
+  cache:
+    enabled: ${CACHE_ENABLED:true}
+    ttl-seconds: 120
+  reco:
+    default-limit: 10
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

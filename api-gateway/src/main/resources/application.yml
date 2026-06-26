@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      routes:
+        - id: user-service
+          uri: ${USER_SERVICE_URI:http://user-service:8081}
+          predicates:
+            - Path=/api/users/**
+        - id: video-service
+          uri: ${VIDEO_SERVICE_URI:http://video-service:8082}
+          predicates:
+            - Path=/api/videos/**
+        - id: recommendation-service
+          uri: ${RECOMMENDATION_SERVICE_URI:http://recommendation-service:8083}
+          predicates:
+            - Path=/api/recommendations/**
+        - id: analytics-service
+          uri: ${ANALYTICS_SERVICE_URI:http://analytics-service:8084}
+          predicates:
+            - Path=/api/analytics/**
+
+jwt:
+  secret: ${JWT_SECRET:change-me-streamflix-super-secret-key-please-rotate-0123456789}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
