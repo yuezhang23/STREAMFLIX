@@ -36,8 +36,9 @@ export const api = {
     request('/users/login', { method: 'POST', body: { email, password } }),
   register: (email, password, displayName) =>
     request('/users/register', { method: 'POST', body: { email, password, displayName } }),
-  listVideos: (size = 50) => request(`/videos?page=0&size=${size}`),
+  listVideos: (size = 200) => request(`/videos?page=0&size=${size}`),
   recommendations: (userId, token) => request(`/recommendations/${userId}`, { token }),
+  recommendedTags: (userId, token) => request(`/videos/tags/${userId}`, { token }),
   trending: (token) => request('/analytics/trending?limit=10', { token }),
   overview: (token) => request('/analytics/overview', { token }),
   watch: (id, token) =>

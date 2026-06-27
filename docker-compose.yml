@@ -100,6 +100,8 @@ services:
       <<: *service-env
       DB_SCHEMA: video
       SPRING_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_HOST:-postgres}:5432/${OLTP_DB:-streaming_oltp}?currentSchema=video
+      APP_TRAFFIC_ENABLED: ${APP_TRAFFIC_ENABLED:-true}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
     ports:
       - "8082:8082"
     depends_on:
@@ -121,6 +123,7 @@ services:
       DB_SCHEMA: reco
       SPRING_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_HOST:-postgres}:5432/${OLTP_DB:-streaming_oltp}?currentSchema=reco
       OLAP_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_HOST:-postgres}:5432/${OLAP_DB:-streaming_olap}
+      APP_RECO_FORCE_COMPUTE: ${APP_RECO_FORCE_COMPUTE:-false}
     ports:
       - "8083:8083"
     depends_on:

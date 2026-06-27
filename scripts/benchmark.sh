@@ -57,27 +57,28 @@ bench() {
   rm -f "$tmp"
 }
 
-echo "== StreamFlix cache benchmark ($REQUESTS requests) =="
+echo "== StreamFlix feed-generation benchmark ($REQUESTS requests) =="
 
-echo "[1/2] cache OFF — restarting recommendation-service..."
-CACHE_ENABLED=false $COMPOSE up -d --no-deps recommendation-service >/dev/null
+echo "[1/2] BASELINE — compute per request (no precompute, no cache)..."
+APP_RECO_FORCE_COMPUTE=true CACHE_ENABLED=false $COMPOSE up -d --no-deps recommendation-service >/dev/null
 TOKEN=$(login); [ -z "$TOKEN" ] && { echo "login failed"; exit 1; }
 wait_ready "$TOKEN"
-echo "  benchmarking (cache off):"
+echo "  benchmarking (compute per request):"
 P50_OFF=$(bench "$TOKEN")
 
-echo "[2/2] cache ON — restarting recommendation-service..."
-CACHE_ENABLED=true $COMPOSE up -d --no-deps recommendation-service >/dev/null
+echo "[2/2] OPTIMIZED — precomputed candidates + Redis cache..."
+APP_RECO_FORCE_COMPUTE=false CACHE_ENABLED=true $COMPOSE up -d --no-deps recommendation-service >/dev/null
 TOKEN=$(login)
 wait_ready "$TOKEN"
-# warm the cache for all users
+# generate candidates + warm the cache for all benchmarked users
+curl -s -o /dev/null -X POST -H "Authorization: Bearer $TOKEN" "$BASE/api/recommendations/precompute"
 for uid in "${USERS[@]}"; do
   curl -s -o /dev/null -H "Authorization: Bearer $TOKEN" "$BASE/api/recommendations/$uid"
 done
-echo "  benchmarking (cache on):"
+echo "  benchmarking (precomputed + cached):"
 P50_ON=$(bench "$TOKEN")
 
 echo
 awk -v off="$P50_OFF" -v on="$P50_ON" 'BEGIN {
-  if (off > 0) printf "RESULT: p50 %.1fms -> %.1fms  =>  %.0f%% latency reduction\n", off, on, (off-on)/off*100
+  if (off > 0) printf "RESULT: feed-generation p50 %.1fms -> %.1fms  =>  %.0f%% latency reduction\n", off, on, (off-on)/off*100
 }'

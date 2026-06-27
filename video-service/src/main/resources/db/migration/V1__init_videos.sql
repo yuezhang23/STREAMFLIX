@@ -1,11 +1,16 @@
 -- video-service OLTP tables (source of truth for catalog + transactional behavior).
 -- Derived/analytical state lives in other services, fed via Kafka — no cross-service FKs.
 
+-- Videos are metadata only (no media files / object storage). Each row references a real YouTube
+-- video by id; thumbnails/embeds are derived from that id. The catalog is loaded at startup from
+-- a curated resource (CatalogSeeder), so no seed rows are inserted here.
 CREATE TABLE videos (
     id            BIGSERIAL PRIMARY KEY,
+    youtube_id    VARCHAR(32),
     title         VARCHAR(255) NOT NULL,
     description   TEXT,
     genre         VARCHAR(64)  NOT NULL,
+    channel       VARCHAR(255),
     duration_sec  INT          NOT NULL,
     release_year  INT          NOT NULL,
     thumbnail_url VARCHAR(512),
@@ -31,16 +36,3 @@ CREATE TABLE ratings (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (user_id, video_id)
 );
-
--- Seed the catalog: 50 videos spread across 8 genres, with usable thumbnails.
-INSERT INTO videos (title, description, genre, duration_sec, release_year, thumbnail_url)
-SELECT
-    'StreamFlix Original #' || g,
-    'An auto-generated demo title in the ' ||
-        (ARRAY['Action','Comedy','Drama','SciFi','Horror','Documentary','Romance','Thriller'])[1 + (g % 8)]
-        || ' genre.',
-    (ARRAY['Action','Comedy','Drama','SciFi','Horror','Documentary','Romance','Thriller'])[1 + (g % 8)],
-    1800 + ((g * 37) % 5400),
-    2005 + (g % 20),
-    'https://picsum.photos/seed/streamflix' || g || '/320/180'
-FROM generate_series(1, 150) AS g;

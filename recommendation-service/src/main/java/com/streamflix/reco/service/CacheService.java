@@ -51,6 +51,13 @@ public class CacheService {
         redis.delete(key);
     }
 
+    /** Proactively warm the cache (used by the precompute job). */
+    public void put(String key, Object value) {
+        if (enabled && value != null) {
+            redis.opsForValue().set(key, write(value), ttl);
+        }
+    }
+
     public JavaType listType(Class<?> element) {
         return mapper.getTypeFactory().constructCollectionType(java.util.List.class, element);
     }

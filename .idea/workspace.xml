@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="9dcc7c97-a960-426e-a0d8-5e508eada593" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/styles.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/styles.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/recommendation-service/src/main/java/com/streamflix/reco/RecommendationServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/recommendation-service/src/main/java/com/streamflix/reco/RecommendationServiceApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/recommendation-service/src/main/java/com/streamflix/reco/engine/CollaborativeFilteringEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/recommendation-service/src/main/java/com/streamflix/reco/engine/CollaborativeFilteringEngine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/recommendation-service/src/main/java/com/streamflix/reco/repository/InteractionDao.java" beforeDir="false" afterPath="$PROJECT_DIR$/recommendation-service/src/main/java/com/streamflix/reco/repository/InteractionDao.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/recommendation-service/src/main/java/com/streamflix/reco/service/CacheService.java" beforeDir="false" afterPath="$PROJECT_DIR$/recommendation-service/src/main/java/com/streamflix/reco/service/CacheService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/recommendation-service/src/main/java/com/streamflix/reco/service/RecommendationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/recommendation-service/src/main/java/com/streamflix/reco/service/RecommendationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/recommendation-service/src/main/java/com/streamflix/reco/web/RecommendationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/recommendation-service/src/main/java/com/streamflix/reco/web/RecommendationController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/recommendation-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/recommendation-service/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/benchmark.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/benchmark.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/video-service/src/main/java/com/streamflix/video/VideoServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/video-service/src/main/java/com/streamflix/video/VideoServiceApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/video-service/src/main/java/com/streamflix/video/config/BehaviorSeeder.java" beforeDir="false" afterPath="$PROJECT_DIR$/video-service/src/main/java/com/streamflix/video/config/BehaviorSeeder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/video-service/src/main/java/com/streamflix/video/domain/Video.java" beforeDir="false" afterPath="$PROJECT_DIR$/video-service/src/main/java/com/streamflix/video/domain/Video.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/video-service/src/main/java/com/streamflix/video/dto/VideoDtos.java" beforeDir="false" afterPath="$PROJECT_DIR$/video-service/src/main/java/com/streamflix/video/dto/VideoDtos.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/video-service/src/main/java/com/streamflix/video/service/VideoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/video-service/src/main/java/com/streamflix/video/service/VideoService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/video-service/src/main/java/com/streamflix/video/web/VideoController.java" beforeDir="false" afterPath="$PROJECT_DIR$/video-service/src/main/java/com/streamflix/video/web/VideoController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/video-service/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/video-service/src/main/resources/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/video-service/src/main/resources/db/migration/V1__init_videos.sql" beforeDir="false" afterPath="$PROJECT_DIR$/video-service/src/main/resources/db/migration/V1__init_videos.sql" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="5" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="2.276852836241266" />
+      <entry key="MS500" value="4.006324799513682" />
+      <entry key="S2" value="4.713065357938898" />
+      <entry key="S5" value="4.881698774039693" />
+      <entry key="S10" value="4.940242924854319" />
+      <entry key="S30" value="4.979944434892543" />
+      <entry key="S60" value="4.989955037973654" />
+      <entry key="M2" value="4.994973218249134" />
+      <entry key="M5" value="5.001415487237312" />
+      <entry key="M10" value="5.383328317943381" />
+      <entry key="M15" value="6.888905215058566" />
+      <entry key="M30" value="14.711117554719797" />
+      <entry key="H1" value="31.298535872248905" />
+      <entry key="H2" value="68.9137567866441" />
+      <entry key="H4" value="130.12736069937515" />
+      <entry key="D1" value="251.9142214696507" />
+      <entry key="W1" value="285.00320162866797" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="0.0" />
+      <entry key="M2" value="0.0" />
+      <entry key="M5" value="0.0" />
+      <entry key="M10" value="0.0" />
+      <entry key="M15" value="0.0" />
+      <entry key="M30" value="0.0" />
+      <entry key="H1" value="0.0" />
+      <entry key="H2" value="0.0" />
+      <entry key="H4" value="0.0" />
+      <entry key="D1" value="0.0" />
+      <entry key="W1" value="0.0" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="2.1731753155048925" />
+      <entry key="MS500" value="3.962891876910038" />
+      <entry key="S2" value="4.699600326838666" />
+      <entry key="S5" value="4.876057098744418" />
+      <entry key="S10" value="4.937377430965795" />
+      <entry key="S30" value="4.978979149446097" />
+      <entry key="S60" value="4.989471117625294" />
+      <entry key="M2" value="4.994730937721772" />
+      <entry key="M5" value="5.001318396840525" />
+      <entry key="M10" value="5.383273454257727" />
+      <entry key="M15" value="6.88884944522245" />
+      <entry key="M30" value="14.711026529927747" />
+      <entry key="H1" value="31.29841787443924" />
+      <entry key="H2" value="68.91363640814228" />
+      <entry key="H4" value="130.1272606904995" />
+      <entry key="D1" value="251.9141930805932" />
+      <entry key="W1" value="285.0031971385654" />
+    </decayedShown>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3FgNKdPPXMgk3IeGdP4LQ6mNUmc" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "onboarding.tips.debug.path": "/Users/zhangyue/Documents/netflix/video-streaming backend/src/Main.java",
+    "settings.editor.selected.configurable": "advanced.settings",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-37e91769500f-intellij.indexing.shared.core-IU-261.25134.95" />
+        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-IU-261.25134.95" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="9dcc7c97-a960-426e-a0d8-5e508eada593" name="Changes" comment="" />
+      <created>1782492690245</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1782492690245</updated>
+      <workItem from="1782492691337" duration="27468000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

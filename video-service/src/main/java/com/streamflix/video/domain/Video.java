@@ -12,6 +12,9 @@ public class Video {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "youtube_id")
+    private String youtubeId;
+
     @Column(nullable = false)
     private String title;
 
@@ -20,6 +23,9 @@ public class Video {
 
     @Column(nullable = false)
     private String genre;
+
+    @Column
+    private String channel;
 
     @Column(name = "duration_sec", nullable = false)
     private int durationSec;
@@ -37,9 +43,11 @@ public class Video {
     }
 
     public Long getId() { return id; }
+    public String getYoutubeId() { return youtubeId; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }
     public String getGenre() { return genre; }
+    public String getChannel() { return channel; }
     public int getDurationSec() { return durationSec; }
     public int getReleaseYear() { return releaseYear; }
     public String getThumbnailUrl() { return thumbnailUrl; }

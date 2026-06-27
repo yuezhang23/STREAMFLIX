@@ -33,4 +33,9 @@ public class InteractionDao {
                 "SELECT user_id, video_id, score FROM user_item_interactions",
                 (rs, i) -> new Interaction(rs.getLong("user_id"), rs.getLong("video_id"), rs.getDouble("score")));
     }
+
+    /** Distinct users that have any interaction signal — the population the precompute job covers. */
+    public List<Long> activeUserIds() {
+        return jdbc.queryForList("SELECT DISTINCT user_id FROM user_item_interactions", Long.class);
+    }
 }

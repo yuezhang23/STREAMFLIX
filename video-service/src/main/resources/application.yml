@@ -33,6 +33,17 @@ app:
   cache:
     enabled: ${CACHE_ENABLED:true}
     ttl-seconds: 300
+  traffic:
+    # continuous synthetic traffic generator (simulated live users)
+    enabled: ${APP_TRAFFIC_ENABLED:true}
+    interval-ms: ${APP_TRAFFIC_INTERVAL_MS:5000}
+    events-per-tick: ${APP_TRAFFIC_EVENTS_PER_TICK:20}
+    users: ${APP_TRAFFIC_USERS:400}
+
+youtube:
+  api:
+    # optional backup metadata source; blank = use the curated JSON seed verbatim
+    key: ${YOUTUBE_API_KEY:}
 
 management:
   endpoints:

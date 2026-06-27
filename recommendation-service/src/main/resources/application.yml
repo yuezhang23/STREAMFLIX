@@ -36,6 +36,11 @@ app:
     ttl-seconds: 120
   reco:
     default-limit: 10
+    # benchmark baseline: when true, bypass cache + candidate store and compute every request
+    force-compute: ${APP_RECO_FORCE_COMPUTE:false}
+  precompute:
+    # how often the offline candidate-generation job refreshes the candidate store + warm cache
+    interval-ms: ${APP_PRECOMPUTE_INTERVAL_MS:30000}
 
 management:
   endpoints:

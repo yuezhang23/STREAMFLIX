@@ -36,6 +36,16 @@ public class VideoController {
         return videoService.search(q, page, size);
     }
 
+    /**
+     * Ranked genre "tags" for the homepage chip bar. The user id is taken from the path (not the
+     * X-User-Id header) because the gateway treats GET /api/videos/** as public catalog browsing
+     * and strips identity headers — mirroring the /api/recommendations/{userId} contract.
+     */
+    @GetMapping("/tags/{userId}")
+    public java.util.List<GenreTag> tags(@PathVariable Long userId) {
+        return videoService.recommendedTags(userId);
+    }
+
     @GetMapping("/{id}")
     public VideoResponse get(@PathVariable Long id) {
         return videoService.getById(id);

@@ -13,13 +13,12 @@ import java.util.*;
  * <p>From the user-item interaction matrix we build item vectors (item -> {user -> score}) and
  * score each candidate video for a target user as the cosine-similarity-weighted sum of the user's
  * interactions: {@code score(c) = Σ_i cosine(i, c) · userScore(i)}. The collaborative-filtering
- * signal is then blended with a popularity prior (a ranking heuristic) so sparse users still get
- * sensible results, items the user already engaged with are excluded, and a cold-start user with no
- * history falls back to the most popular titles.</p>
+ * signal is blended with a popularity prior (a ranking heuristic) so sparse users still get sensible
+ * results, items the user already engaged with are excluded, and a cold-start user with no history
+ * falls back to the most popular titles.</p>
  *
- * <p>At demo scale (tens of users/items) recomputing per request is cheap and clear; the result is
- * cached in Redis, which is where the latency win comes from. At production scale the item-item
- * similarities would be precomputed offline.</p>
+ * <p>The matrix is loaded into a {@link Model} once; {@link #recommend} scores a single user while
+ * {@link #recommendForUsers} scores many users from one model build (used by the precompute job).</p>
  */
 @Component
 public class CollaborativeFilteringEngine {
@@ -33,41 +32,62 @@ public class CollaborativeFilteringEngine {
     }
 
     public List<RecItem> recommend(long userId, int limit) {
-        List<Interaction> all = dao.findAll();
+        return score(buildModel(), userId, limit);
+    }
 
-        Map<Long, Map<Long, Double>> userItems = new HashMap<>();
-        Map<Long, Map<Long, Double>> itemUsers = new HashMap<>();
-        Map<Long, Double> popularity = new HashMap<>();
-        for (Interaction in : all) {
-            userItems.computeIfAbsent(in.userId(), k -> new HashMap<>()).put(in.videoId(), in.score());
-            itemUsers.computeIfAbsent(in.videoId(), k -> new HashMap<>()).put(in.userId(), in.score());
-            popularity.merge(in.videoId(), in.score(), Double::sum);
+    /** Build the model once and score every requested user — used for batch candidate precompute. */
+    public Map<Long, List<RecItem>> recommendForUsers(Collection<Long> userIds, int limit) {
+        Model model = buildModel();
+        Map<Long, List<RecItem>> out = new HashMap<>();
+        for (Long userId : userIds) {
+            out.put(userId, score(model, userId, limit));
         }
+        return out;
+    }
 
-        double maxPop = popularity.values().stream().mapToDouble(Double::doubleValue).max().orElse(1.0);
-        Map<Long, Double> itemNorm = new HashMap<>();
-        for (var e : itemUsers.entrySet()) {
-            itemNorm.put(e.getKey(), Math.sqrt(e.getValue().values().stream()
+    // ---- model ----
+
+    private static final class Model {
+        final Map<Long, Map<Long, Double>> userItems = new HashMap<>();
+        final Map<Long, Map<Long, Double>> itemUsers = new HashMap<>();
+        final Map<Long, Double> popularity = new HashMap<>();
+        final Map<Long, Double> itemNorm = new HashMap<>();
+        double maxPop = 1.0;
+    }
+
+    private Model buildModel() {
+        Model m = new Model();
+        for (Interaction in : dao.findAll()) {
+            m.userItems.computeIfAbsent(in.userId(), k -> new HashMap<>()).put(in.videoId(), in.score());
+            m.itemUsers.computeIfAbsent(in.videoId(), k -> new HashMap<>()).put(in.userId(), in.score());
+            m.popularity.merge(in.videoId(), in.score(), Double::sum);
+        }
+        m.maxPop = m.popularity.values().stream().mapToDouble(Double::doubleValue).max().orElse(1.0);
+        for (var e : m.itemUsers.entrySet()) {
+            m.itemNorm.put(e.getKey(), Math.sqrt(e.getValue().values().stream()
                     .mapToDouble(s -> s * s).sum()));
         }
+        return m;
+    }
 
-        Map<Long, Double> seen = userItems.getOrDefault(userId, Map.of());
+    private List<RecItem> score(Model m, long userId, int limit) {
+        Map<Long, Double> seen = m.userItems.getOrDefault(userId, Map.of());
 
         // Cold start: no history -> most popular titles.
         if (seen.isEmpty()) {
-            return topPopular(popularity, Set.of(), limit, "Popular on StreamFlix");
+            return topPopular(m, Set.of(), limit, "Popular on StreamFlix");
         }
 
         List<RecItem> scored = new ArrayList<>();
-        for (Long candidate : itemUsers.keySet()) {
+        for (Long candidate : m.itemUsers.keySet()) {
             if (seen.containsKey(candidate)) {
                 continue; // exclude already-engaged items
             }
             double cf = 0.0;
             for (var watched : seen.entrySet()) {
-                cf += cosine(itemUsers, itemNorm, watched.getKey(), candidate) * watched.getValue();
+                cf += cosine(m, watched.getKey(), candidate) * watched.getValue();
             }
-            double popNorm = popularity.getOrDefault(candidate, 0.0) / maxPop;
+            double popNorm = m.popularity.getOrDefault(candidate, 0.0) / m.maxPop;
             double blended = cf + POPULARITY_WEIGHT * popNorm;
             String reason = cf > 0 ? "Because you watched similar titles" : "Popular on StreamFlix";
             scored.add(new RecItem(candidate, round(blended), reason));
@@ -77,15 +97,14 @@ public class CollaborativeFilteringEngine {
         if (scored.size() >= limit) {
             return scored.subList(0, limit);
         }
-        // Backfill with popular items not already chosen.
         Set<Long> chosen = new HashSet<>(seen.keySet());
         scored.forEach(r -> chosen.add(r.videoId()));
-        scored.addAll(topPopular(popularity, chosen, limit - scored.size(), "Popular on StreamFlix"));
+        scored.addAll(topPopular(m, chosen, limit - scored.size(), "Popular on StreamFlix"));
         return scored;
     }
 
-    private List<RecItem> topPopular(Map<Long, Double> popularity, Set<Long> exclude, int limit, String reason) {
-        return popularity.entrySet().stream()
+    private List<RecItem> topPopular(Model m, Set<Long> exclude, int limit, String reason) {
+        return m.popularity.entrySet().stream()
                 .filter(e -> !exclude.contains(e.getKey()))
                 .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
                 .limit(limit)
@@ -93,16 +112,14 @@ public class CollaborativeFilteringEngine {
                 .toList();
     }
 
-    private double cosine(Map<Long, Map<Long, Double>> itemUsers, Map<Long, Double> itemNorm,
-                          long a, long b) {
-        double na = itemNorm.getOrDefault(a, 0.0);
-        double nb = itemNorm.getOrDefault(b, 0.0);
+    private double cosine(Model m, long a, long b) {
+        double na = m.itemNorm.getOrDefault(a, 0.0);
+        double nb = m.itemNorm.getOrDefault(b, 0.0);
         if (na == 0 || nb == 0) {
             return 0.0;
         }
-        Map<Long, Double> va = itemUsers.get(a);
-        Map<Long, Double> vb = itemUsers.get(b);
-        // iterate the smaller vector
+        Map<Long, Double> va = m.itemUsers.get(a);
+        Map<Long, Double> vb = m.itemUsers.get(b);
         if (va.size() > vb.size()) {
             Map<Long, Double> tmp = va; va = vb; vb = tmp;
         }
