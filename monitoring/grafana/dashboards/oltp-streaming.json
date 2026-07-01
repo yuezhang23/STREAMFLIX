@@ -1,0 +1,80 @@
+{
+  "uid": "oltp-streaming",
+  "title": "OLTP Streaming — write path under load",
+  "tags": ["streamflix", "oltp"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "5s",
+  "time": { "from": "now-15m", "to": "now" },
+  "templating": { "list": [] },
+  "annotations": { "list": [] },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Write throughput by endpoint (req/s)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
+      "targets": [
+        {
+          "refId": "A",
+          "legendFormat": "{{uri}} ({{status}})",
+          "expr": "sum by (uri, status) (rate(http_server_requests_seconds_count{application=\"video-service\", method=\"POST\"}[1m]))"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Write latency p50 / p95 / p99 (ms)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "ms", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "legendFormat": "p50", "expr": "histogram_quantile(0.50, sum(rate(http_server_requests_seconds_bucket{application=\"video-service\", method=\"POST\", uri=~\"/api/videos/.+/(watch|view|rate|like)\"}[1m])) by (le)) * 1000" },
+        { "refId": "B", "legendFormat": "p95", "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{application=\"video-service\", method=\"POST\", uri=~\"/api/videos/.+/(watch|view|rate|like)\"}[1m])) by (le)) * 1000" },
+        { "refId": "C", "legendFormat": "p99", "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{application=\"video-service\", method=\"POST\", uri=~\"/api/videos/.+/(watch|view|rate|like)\"}[1m])) by (le)) * 1000" }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "HikariCP connection pool (video-service)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "legendFormat": "active", "expr": "hikaricp_connections_active{application=\"video-service\"}" },
+        { "refId": "B", "legendFormat": "idle", "expr": "hikaricp_connections_idle{application=\"video-service\"}" },
+        { "refId": "C", "legendFormat": "pending", "expr": "hikaricp_connections_pending{application=\"video-service\"}" },
+        { "refId": "D", "legendFormat": "max", "expr": "hikaricp_connections_max{application=\"video-service\"}" }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Postgres transactions/sec & backends",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "legendFormat": "commits/s {{datname}}", "expr": "rate(pg_stat_database_xact_commit{datname=\"streaming_oltp\"}[1m])" },
+        { "refId": "B", "legendFormat": "rollbacks/s {{datname}}", "expr": "rate(pg_stat_database_xact_rollback{datname=\"streaming_oltp\"}[1m])" },
+        { "refId": "C", "legendFormat": "backends {{datname}}", "expr": "pg_stat_database_numbackends{datname=\"streaming_oltp\"}" }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Kafka consumer lag (reco + analytics)",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
+      "targets": [
+        { "refId": "A", "legendFormat": "{{application}} max lag", "expr": "max by (application) (kafka_consumer_fetch_manager_records_lag)" }
+      ]
+    }
+  ]
+}

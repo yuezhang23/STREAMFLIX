@@ -1,0 +1,23 @@
+# Scrapes Spring Actuator/Micrometer from the four services + Postgres exporter, and also acts as
+# the remote-write receiver for k6 (start flag --web.enable-remote-write-receiver in compose).
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: spring-services
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - user-service:8081
+          - video-service:8082
+          - recommendation-service:8083
+          - analytics-service:8084
+        labels:
+          stack: streamflix
+
+  - job_name: postgres
+    static_configs:
+      - targets: [postgres-exporter:9187]
+        labels:
+          stack: streamflix

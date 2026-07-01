@@ -39,3 +39,10 @@ frontend/dist/
 
 ### Env ###
 .env
+
+### Load simulator artifacts ###
+scripts/.youtube-catalog-checkpoint.json
+loadtest/results/*
+!loadtest/results/.gitkeep
+# large generated catalog is optional to commit; ignore by default (regenerate with the puller)
+video-service/src/main/resources/catalog/youtube-catalog-large.json

@@ -1,0 +1,19 @@
+{
+  "_comment": "The 'lite Netflix-like' target bar. The gap report and Grafana scorecard compare measured performance against these. All are dial-able toward mid-scale.",
+  "scale": {
+    "catalogVideos": 5000,
+    "users": 50000
+  },
+  "throughput": {
+    "targetEventsPerSec": 500
+  },
+  "latencyMs": {
+    "readP95": 200,
+    "writeP95": 250,
+    "recommendationP95": 150
+  },
+  "reliability": {
+    "errorRateMax": 0.001,
+    "dbPoolUtilizationMax": 0.8
+  }
+}
