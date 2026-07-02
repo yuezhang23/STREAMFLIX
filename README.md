@@ -8,15 +8,6 @@ write path from an **OLAP** analytics pipeline. Videos are represented purely by
 signal. Fully containerized — `docker compose up --build` brings up the whole system plus a small
 React demo UI that embeds the real YouTube player.
 
-## What this demonstrates (resume targets)
-
-| Target | Where it lives |
-|--------|----------------|
-| **Event-driven user-behavior tracking processing thousands of watch events through async pipelines** | Kafka topic `user-behavior`; producer `video-service/.../BehaviorEventPublisher.java`; a continuous `video-service/.../TrafficSimulator.java` streams events; independent consumers in reco (`group: reco`) and analytics (`group: analytics`) |
-| **Recommendation APIs using collaborative filtering + popularity-based ranking** | `recommendation-service/.../engine/CollaborativeFilteringEngine.java` (item-item cosine CF blended with a popularity prior + cold-start fallback) served at `GET /api/recommendations/{userId}` |
-| **Reduced feed-generation latency via Redis caching + precomputed recommendation candidates** | offline `recommendation-service/.../job/CandidatePrecomputeJob.java` → durable `recommendation_candidates` store + warm Redis; serving is **Redis → candidate store → on-the-fly compute**; measured by `scripts/benchmark.sh` |
-| **Separate OLTP and analytics pipelines emulating production streaming-platform architecture** | OLTP (schema-per-service) in `streaming_oltp`; OLAP star schema in `streaming_olap` (`analytics-service/.../db/olap/`); batch ETL `analytics-service/.../etl/EtlJob.java` |
-
 ## Architecture
 
 ```
